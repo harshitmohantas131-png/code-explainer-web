@@ -1,3 +1,4 @@
+console.log(data);
 async function explainCode() {
   const code = document.getElementById("codeInput").value;
 
@@ -6,7 +7,7 @@ async function explainCode() {
   document.getElementById("output").innerText = "Loading...";
 
   try {
-    const res = await fetch("http://localhost:3000/explain", {
+    const res = await fetch("https://code-explainer-web-api.onrender.com/explain", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -16,9 +17,16 @@ async function explainCode() {
 
     const data = await res.json();
 
-    document.getElementById("output").innerText = data.explanation;
+    // Better handling
+    if (data.explanation) {
+      document.getElementById("output").innerText = data.explanation;
+    } else if (data.error) {
+      document.getElementById("output").innerText = "Error: " + data.error;
+    } else {
+      document.getElementById("output").innerText = "No explanation received";
+    }
 
   } catch (error) {
-    document.getElementById("output").innerText = "Error occurred";
+    document.getElementById("output").innerText = "Server error";
   }
 }

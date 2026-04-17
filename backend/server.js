@@ -1,64 +1,87 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
-const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+const fetch = require('node-fetch');
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Middleware
 app.use(cors());
 app.use(express.json());
 
-// health route
+/**
+ * Health check route
+ */
 app.get('/health', (req, res) => {
   res.json({ status: "ok" });
 });
 
-// AI route
+/**
+ * Explain Code Route
+ */
 app.post('/explain', async (req, res) => {
   try {
     const { code } = req.body;
 
-    if (!code) {
+    // Validation
+    if (!code || code.trim() === "") {
       return res.status(400).json({ error: "Code is required" });
     }
 
-    const prompt = `
-Explain the following code in simple terms.
-Also mention what it does step by step.
+    const apiKey = process.env.OPENROUTER_API_KEY;
+    console.log("API KEY:", process.env.OPENROUTER_API_KEY);
 
-Code:
-${code}
-`;
+    if (!apiKey) {
+      return res.status(500).json({ error: "API key not configured" });
+    }
 
+    // Call OpenRouter API
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
+        "Authorization": `Bearer ${apiKey}`,
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
         model: "openai/gpt-4o-mini",
         messages: [
-          { role: "user", content: prompt }
+          {
+            role: "system",
+            content: "You are a helpful coding tutor. Explain code in simple terms step by step."
+          },
+          {
+            role: "user",
+            content: `Explain this code clearly:\n\n${code}`
+          }
         ]
       })
     });
 
     const data = await response.json();
 
-    const reply = data.choices?.[0]?.message?.content || "No explanation available";
+    // Debug log (very useful if something breaks)
+    console.log("API RESPONSE:", JSON.stringify(data, null, 2));
 
-    res.json({ explanation: reply });
+    const explanation = data?.choices?.[0]?.message?.content;
+
+    if (!explanation) {
+      return res.json({ explanation: "No explanation returned from AI" });
+    }
+
+    res.json({ explanation });
 
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "AI request failed" });
+    console.error("ERROR:", error);
+    res.status(500).json({ error: "Something went wrong" });
   }
 });
 
+/**
+ * Start server
+ */
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
