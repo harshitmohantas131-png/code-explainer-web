@@ -31,7 +31,7 @@ app.post('/explain', async (req, res) => {
       return res.status(400).json({ error: "Code is required" });
     }
 
-    const apiKey = process.env.OPENROUTER_API_KEY;
+    const apiKey = "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"; 
     console.log("API KEY:", process.env.OPENROUTER_API_KEY);
 
     if (!apiKey) {
