@@ -1,7 +1,7 @@
-const express = require('express');
-const cors = require('cors');
-const dotenv = require('dotenv');
-const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
+import express from 'express';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import fetch from 'node-fetch';
 
 dotenv.config();
 
