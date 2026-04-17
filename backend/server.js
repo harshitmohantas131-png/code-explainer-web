@@ -31,8 +31,8 @@ app.post('/explain', async (req, res) => {
       return res.status(400).json({ error: "Code is required" });
     }
 
-    const apiKey = "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"; 
-    console.log("API KEY:", process.env.OPENROUTER_API_KEY);
+    const apiKey = "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"; // Replace with your actual API key or use environment variable
+    console.log("API KEY:", apiKey);
 
     if (!apiKey) {
       return res.status(500).json({ error: "API key not configured" });
